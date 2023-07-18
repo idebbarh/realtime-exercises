@@ -11,17 +11,39 @@ const INTERVAL = 3000;
 chat.addEventListener("submit", function (e) {
   e.preventDefault();
   postNewMsg(chat.elements.user.value, chat.elements.text.value);
-  chat.elements.text.value = "";
+  Array.from(chat.elements).forEach((elem) => {
+    elem.value = "";
+  });
 });
 
 async function postNewMsg(user, text) {
   // post to /poll a new message
-  // write code here
+  try {
+    await fetch("http://localhost:3000/poll", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ user, text }),
+    });
+  } catch (e) {
+    console.error("polling error :", e);
+  }
 }
 
 async function getNewMsgs() {
   // poll the server
-  // write code here
+  let data;
+  try {
+    const res = await fetch("http://localhost:3000/poll");
+    data = await res.json();
+  } catch (e) {
+    console.error("polling error :", e);
+  }
+  allChat = data.res;
+  render();
+  setTimeout(getNewMsgs, INTERVAL);
 }
 
 function render() {

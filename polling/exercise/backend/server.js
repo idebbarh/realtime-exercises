@@ -8,11 +8,15 @@ const msg = new nanobuffer(50);
 const getMsgs = () => Array.from(msg).reverse();
 
 // feel free to take out, this just seeds the server with at least one message
-msg.push({
-  user: "brian",
-  text: "hi",
-  time: Date.now(),
-});
+function pushMsg(user, text) {
+  msg.push({
+    user,
+    text,
+    time: Date.now(),
+  });
+}
+
+pushMsg("ismail", "hi ismail");
 
 // get express ready to run
 const app = express();
@@ -21,13 +25,16 @@ app.use(bodyParser.json());
 app.use(express.static("frontend"));
 
 app.get("/poll", function (req, res) {
-  // use getMsgs to get messages to send back
-  // write code here
+  const msgs = getMsgs();
+  res.status(200).json({ res: msgs });
 });
 
 app.post("/poll", function (req, res) {
+  const { user, text } = req.body;
+  /* console.log(data); */
   // add a new message to the server
-  // write code here
+  pushMsg(user, text);
+  res.status(201).json({ res: "done" });
 });
 
 // start the server

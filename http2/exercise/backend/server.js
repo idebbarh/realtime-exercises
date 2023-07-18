@@ -10,11 +10,15 @@ let connections = [];
 const msg = new nanobuffer(50);
 const getMsgs = () => Array.from(msg).reverse();
 
-msg.push({
-  user: "brian",
-  text: "hi",
-  time: Date.now(),
-});
+function pushMsg(user, text) {
+  msg.push({
+    user,
+    text,
+    time: Date.now(),
+  });
+}
+
+pushMsg("ismail", "hello");
 
 // the two commands you'll have to run in the root directory of the project are
 // (not inside the backend folder)
@@ -34,6 +38,29 @@ const server = http2.createSecureServer({
  * Code goes here
  *
  */
+
+server.on("stream", (stream, headers) => {
+  const path = headers[":path"];
+  const method = headers[":method"];
+
+  if (path === "/msgs" && method === "GET") {
+    console.log("connected" + stream.id);
+    stream.respond({
+      ":status": 200,
+      "content-type": "text/plain; charset=utf-8",
+    });
+
+    stream.write(
+      JSON.stringify({
+        res: getMsgs(),
+      })
+    );
+
+    stream.on("close", () => {
+      console.log("disconnected" + stream.id);
+    });
+  }
+});
 
 server.on("request", async (req, res) => {
   const path = req.headers[":path"];
